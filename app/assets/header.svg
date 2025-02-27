@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800px" height="200px" viewBox="0 0 800 200" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <linearGradient x1="0%" y1="0%" x2="100%" y2="100%" id="gradient">
+            <stop stop-color="#6366F1" offset="0%">
+                <animate attributeName="stop-color" values="#6366F1; #8B5CF6; #EC4899; #6366F1" dur="10s" repeatCount="indefinite" />
+            </stop>
+            <stop stop-color="#8B5CF6" offset="50%">
+                <animate attributeName="stop-color" values="#8B5CF6; #EC4899; #6366F1; #8B5CF6" dur="10s" repeatCount="indefinite" />
+            </stop>
+            <stop stop-color="#EC4899" offset="100%">
+                <animate attributeName="stop-color" values="#EC4899; #6366F1; #8B5CF6; #EC4899" dur="10s" repeatCount="indefinite" />
+            </stop>
+        </linearGradient>
+        <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#000" flood-opacity="0.2" />
+        </filter>
+    </defs>
+    <g fill="none" fill-rule="evenodd">
+        <rect fill="url(#gradient)" x="10" y="10" width="780" height="180" rx="20" ry="20" filter="url(#shadow)">
+            <animate attributeName="rx" values="20;30;20" dur="8s" repeatCount="indefinite" />
+        </rect>
+        <text x="400" y="100" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="white" filter="url(#shadow)">
+            PlayScraperAPI
+            <animate attributeName="opacity" values="0.8;1;0.8" dur="5s" repeatCount="indefinite" />
+        </text>
+        <text x="400" y="140" font-family="Arial, sans-serif" font-size="20" text-anchor="middle" fill="white" opacity="0.9">
+            Seamless Web Scraping with Playwright
+            <animate attributeName="opacity" values="0.7;0.9;0.7" dur="5s" repeatCount="indefinite" />
+        </text>
+    </g>
+</svg>
