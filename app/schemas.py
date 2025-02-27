@@ -42,6 +42,7 @@ class ScrapingRequest(BaseModel):
     actions: Optional[List[ScrapingAction]] = Field(None, description="スクレイピング前に実行するアクション")
     options: Optional[Dict[str, Any]] = Field(None, description="スクレイピングオプション")
     save_html_file: Optional[bool] = Field(False, description="HTMLをファイルとして保存するかどうか")
+    html_output_dir: Optional[str] = Field("output/html", description="HTMLファイルを保存するディレクトリ")
 
 
 class ScrapingResponse(BaseModel):
