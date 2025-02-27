@@ -73,33 +73,85 @@ class PlaywrightScraper:
                 logger.error(f"アクション実行エラー {action_type}: {str(e)}")
                 raise
     
-    async def extract_data(self, page: Page, selectors: Dict[str, str]) -> Dict[str, Any]:
+    async def extract_data(self, page: Page, selectors: Dict[str, Any]) -> Dict[str, Any]:
         """指定されたセレクタを使用してページからデータを抽出する"""
         result = {}
         
         if not selectors:
             return result
         
-        for key, selector in selectors.items():
+        for key, selector_def in selectors.items():
             try:
-                if selector.startswith("//"):  # XPathセレクタ
+                # セレクタが文字列の場合は従来の方法で処理
+                if isinstance(selector_def, str):
+                    selector = selector_def
+                    selector_type = "css"
+                    optional = False
+                    fallback = None
+                    transform = "text"
+                    
+                    # XPathセレクタの自動検出
+                    if selector.startswith("//"):
+                        selector_type = "xpath"
+                # セレクタが辞書またはオブジェクトの場合は拡張セレクタとして処理
+                else:
+                    selector = selector_def.get("value") if isinstance(selector_def, dict) else selector_def.value
+                    selector_type = selector_def.get("type", "css") if isinstance(selector_def, dict) else selector_def.type
+                    optional = selector_def.get("optional", False) if isinstance(selector_def, dict) else selector_def.optional
+                    fallback = selector_def.get("fallback") if isinstance(selector_def, dict) else selector_def.fallback
+                    transform = selector_def.get("transform", "text") if isinstance(selector_def, dict) else selector_def.transform
+                
+                # セレクタタイプに基づいて要素を検索
+                element = None
+                if selector_type == "xpath":
                     elements = await page.xpath(selector)
-                    if elements:
-                        result[key] = await elements[0].inner_text()
-                else:  # CSSセレクタ
+                    element = elements[0] if elements else None
+                elif selector_type == "text":
+                    element = await page.get_by_text(selector).first
+                elif selector_type == "css":
                     element = await page.query_selector(selector)
-                    if element:
-                        result[key] = await element.inner_text()
+                else:
+                    logger.warning(f"未対応のセレクタタイプ: {selector_type}")
+                    continue
+                
+                # 要素が見つからない場合の処理
+                if element is None:
+                    if optional:
+                        result[key] = fallback
+                        continue
+                    elif fallback is not None:
+                        result[key] = fallback
+                        continue
+                    else:
+                        result[key] = None
+                        continue
+                
+                # 変換処理
+                if transform == "text":
+                    result[key] = await element.inner_text()
+                elif transform == "html":
+                    result[key] = await element.inner_html()
+                elif transform.startswith("attribute:"):
+                    attr_name = transform.split(":", 1)[1]
+                    result[key] = await element.get_attribute(attr_name)
+                else:
+                    result[key] = await element.inner_text()
+                
             except Exception as e:
                 logger.error(f"データ抽出エラー {key}: {str(e)}")
-                result[key] = None
+                if isinstance(selector_def, dict) and selector_def.get("optional", False):
+                    result[key] = selector_def.get("fallback")
+                elif not isinstance(selector_def, str) and getattr(selector_def, "optional", False):
+                    result[key] = getattr(selector_def, "fallback", None)
+                else:
+                    result[key] = None
         
         return result
     
     async def scrape(
         self, 
         url: str, 
-        selectors: Optional[Dict[str, str]] = None, 
+        selectors: Optional[Dict[str, Any]] = None, 
         actions: Optional[List[Dict[str, Any]]] = None,
         take_screenshot: bool = True,
         get_html: bool = True
