@@ -57,7 +57,8 @@ class PlayScraperClient:
         selectors: Optional[Dict[str, Any]] = None,
         actions: Optional[List[Dict[str, Any]]] = None,
         options: Optional[Dict[str, Any]] = None,
-        save_html_file: bool = False
+        save_html_file: bool = False,
+        html_output_dir: str = "output/html"
     ) -> Dict[str, Any]:
         """
         スクレイピングタスクを開始
@@ -68,6 +69,7 @@ class PlayScraperClient:
             actions: スクレイピング前に実行するアクション
             options: スクレイピングオプション
             save_html_file: HTMLをファイルとして保存するかどうか
+            html_output_dir: HTMLファイルを保存するディレクトリ
             
         Returns:
             タスクID情報
@@ -76,7 +78,8 @@ class PlayScraperClient:
         
         payload = {
             "url": url,
-            "save_html_file": save_html_file
+            "save_html_file": save_html_file,
+            "html_output_dir": html_output_dir
         }
         
         if selectors:
@@ -176,6 +179,7 @@ def main():
     parser.add_argument("--output", default="output.json", help="結果を保存するJSONファイルパス")
     parser.add_argument("--verbose", "-v", action="store_true", help="詳細なログを表示")
     parser.add_argument("--save-output", action="store_true", help="HTMLとスクリーンショットをファイルとして保存する")
+    parser.add_argument("--html-dir", default="output/html", help="HTMLファイルとスクリーンショットを保存するディレクトリ")
     
     args = parser.parse_args()
     
@@ -220,7 +224,13 @@ def main():
         
         # スクレイピングタスクの開始
         logger.info(f"スクレイピング開始: {args.url}")
-        task = client.start_scraping(args.url, selectors, actions, save_html_file=args.save_output)
+        task = client.start_scraping(
+            args.url, 
+            selectors, 
+            actions, 
+            save_html_file=args.save_output,
+            html_output_dir=args.html_dir
+        )
         task_id = task["task_id"]
         
         # タスクの完了を待機
@@ -242,6 +252,29 @@ def main():
             if "html_file" in result["result"]:
                 logger.success(f"HTMLファイルを保存しました: {result['result']['html_file']}")
             
+            # クライアント側でHTMLを保存
+            if "html" in result["result"] and args.save_output:
+                import os
+                from urllib.parse import urlparse
+                
+                # URLからファイル名を生成
+                parsed_url = urlparse(args.url)
+                domain = parsed_url.netloc.replace(".", "_")
+                path = parsed_url.path.replace("/", "_")
+                if path == "":
+                    path = "_index"
+                filename = f"{domain}{path}.html"
+                
+                # 指定されたディレクトリがなければ作成
+                os.makedirs(args.html_dir, exist_ok=True)
+                filepath = os.path.join(args.html_dir, filename)
+                
+                # HTMLをファイルに書き込み
+                with open(filepath, "w", encoding="utf-8") as f:
+                    f.write(result["result"]["html"])
+                
+                logger.success(f"HTMLをファイルに保存しました: {filepath}")
+            
             # スクリーンショットの保存
             if "screenshot" in result["result"] and args.save_output:
                 import os
@@ -256,9 +289,9 @@ def main():
                     path = "_index"
                 filename = f"{domain}{path}.png"
                 
-                # outputディレクトリがなければ作成
-                os.makedirs("output", exist_ok=True)
-                filepath = os.path.join("output", filename)
+                # 指定されたディレクトリがなければ作成
+                os.makedirs(args.html_dir, exist_ok=True)
+                filepath = os.path.join(args.html_dir, filename)
                 
                 # Base64エンコードされたスクリーンショットをデコードしてファイルに保存
                 screenshot_data = base64.b64decode(result["result"]["screenshot"])

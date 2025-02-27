@@ -51,7 +51,8 @@ async def scrape_task(task_id: str, request: ScrapingRequest):
             str(request.url), 
             request.selectors, 
             request.actions,
-            save_html_file=request.save_html_file
+            save_html_file=request.save_html_file,
+            html_output_dir=request.html_output_dir
         )
         scraping_tasks[task_id]["status"] = "completed"
         scraping_tasks[task_id]["result"] = result
@@ -69,6 +70,7 @@ async def scrape(request: ScrapingRequest, background_tasks: BackgroundTasks):
     # リクエストの内容をログに出力
     logger.info(f"スクレイピングリクエスト受信: {request.url}")
     logger.info(f"save_html_file: {request.save_html_file}")
+    logger.info(f"html_output_dir: {request.html_output_dir}")
     
     # request.dictの代わりにモデルを手動で辞書に変換し、URLを文字列に変換
     request_dict = {
@@ -76,7 +78,8 @@ async def scrape(request: ScrapingRequest, background_tasks: BackgroundTasks):
         "selectors": request.selectors,
         "actions": [action.dict() for action in request.actions] if request.actions else None,
         "options": request.options,
-        "save_html_file": request.save_html_file
+        "save_html_file": request.save_html_file,
+        "html_output_dir": request.html_output_dir
     }
     
     scraping_tasks[task_id] = {"status": "pending", "request": request_dict}

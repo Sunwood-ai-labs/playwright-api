@@ -295,12 +295,14 @@ class PlaywrightScraper:
         actions: Optional[List[Dict[str, Any]]] = None,
         take_screenshot: bool = True,
         get_html: bool = True,
-        save_html_file: bool = False
+        save_html_file: bool = False,
+        html_output_dir: str = "output/html"
     ) -> Dict[str, Any]:
         """指定されたURLをスクレイピングし、データを抽出する"""
         # デバッグログを追加
         logger.info(f"スクレイピング開始: {url}")
         logger.info(f"save_html_file: {save_html_file}")
+        logger.info(f"html_output_dir: {html_output_dir}")
         
         if not self.browser:
             await self.initialize()
@@ -360,9 +362,9 @@ class PlaywrightScraper:
                         path = "_index"
                     filename = f"{domain}{path}.html"
                     
-                    # outputディレクトリがなければ作成
-                    os.makedirs("output", exist_ok=True)
-                    filepath = os.path.join("output", filename)
+                    # 指定されたディレクトリがなければ作成
+                    os.makedirs(html_output_dir, exist_ok=True)
+                    filepath = os.path.join(html_output_dir, filename)
                     
                     # HTMLをファイルに書き込み
                     with open(filepath, "w", encoding="utf-8") as f:
