@@ -47,7 +47,12 @@ async def scrape_task(task_id: str, request: ScrapingRequest):
     """バックグラウンドでスクレイピングを実行するタスク"""
     try:
         scraping_tasks[task_id]["status"] = "running"
-        result = await scraper.scrape(str(request.url), request.selectors, request.actions)
+        result = await scraper.scrape(
+            str(request.url), 
+            request.selectors, 
+            request.actions,
+            save_html_file=request.save_html_file
+        )
         scraping_tasks[task_id]["status"] = "completed"
         scraping_tasks[task_id]["result"] = result
     except Exception as e:
@@ -61,12 +66,17 @@ async def scrape(request: ScrapingRequest, background_tasks: BackgroundTasks):
     """スクレイピングタスクを開始する"""
     task_id = f"task_{len(scraping_tasks) + 1}"
     
+    # リクエストの内容をログに出力
+    logger.info(f"スクレイピングリクエスト受信: {request.url}")
+    logger.info(f"save_html_file: {request.save_html_file}")
+    
     # request.dictの代わりにモデルを手動で辞書に変換し、URLを文字列に変換
     request_dict = {
         "url": str(request.url),
         "selectors": request.selectors,
         "actions": [action.dict() for action in request.actions] if request.actions else None,
-        "options": request.options
+        "options": request.options,
+        "save_html_file": request.save_html_file
     }
     
     scraping_tasks[task_id] = {"status": "pending", "request": request_dict}
