@@ -169,3 +169,6 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+.SourceSageAssets/
+output.json
+output/codeium_com_windsurf.png
