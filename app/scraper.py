@@ -73,6 +73,80 @@ class PlaywrightScraper:
                 logger.error(f"アクション実行エラー {action_type}: {str(e)}")
                 raise
     
+    async def process_compound_selector(self, page: Page, compound_selector):
+        """複合セレクタを処理する"""
+        operator = compound_selector.get("operator") if isinstance(compound_selector, dict) else compound_selector.operator
+        selectors = compound_selector.get("selectors") if isinstance(compound_selector, dict) else compound_selector.selectors
+        transform = compound_selector.get("transform", "text") if isinstance(compound_selector, dict) else compound_selector.transform
+        
+        if not selectors or len(selectors) == 0:
+            return None
+        
+        # 各セレクタを処理
+        elements = []
+        for selector in selectors:
+            # 単純な文字列セレクタの場合
+            if isinstance(selector, str):
+                if selector.startswith("//"):  # XPath
+                    els = await page.xpath(selector)
+                    if els:
+                        elements.append(els[0])
+                else:  # CSS
+                    el = await page.query_selector(selector)
+                    if el:
+                        elements.append(el)
+            
+            # 複合セレクタの場合は再帰的に処理
+            elif isinstance(selector, dict) and selector.get("operator"):
+                el = await self.process_compound_selector(page, selector)
+                if el:
+                    elements.append(el)
+            
+            # 通常のセレクタ定義の場合
+            elif isinstance(selector, dict):
+                selector_type = selector.get("type", "css")
+                selector_value = selector.get("value")
+                
+                if selector_type == "xpath":
+                    els = await page.xpath(selector_value)
+                    if els:
+                        elements.append(els[0])
+                elif selector_type == "text":
+                    el = await page.get_by_text(selector_value).first
+                    if el:
+                        elements.append(el)
+                else:  # css
+                    el = await page.query_selector(selector_value)
+                    if el:
+                        elements.append(el)
+        
+        # 演算子に基づいて結果を処理
+        result = None
+        if operator == "and":
+            # すべてのセレクタが一致した場合のみ最初の要素を返す
+            if len(elements) == len(selectors):
+                result = elements[0]
+        elif operator == "or":
+            # いずれかのセレクタが一致した場合に最初の一致を返す
+            if elements:
+                result = elements[0]
+        elif operator == "not":
+            # セレクタが一致しない場合にダミー要素を返す（テキスト変換用）
+            if not elements:
+                # ダミー要素を作成（テキスト変換用）
+                await page.evaluate("() => { window._dummyEl = document.createElement('div'); window._dummyEl.innerText = 'true'; }")
+                result = await page.evaluate_handle("() => window._dummyEl")
+            else:
+                result = None
+        elif operator == "chain":
+            # セレクタを順番に適用（最初のセレクタから始めて、その結果に次のセレクタを適用）
+            if elements:
+                # TODO: 実際のチェーン処理の実装
+                # 現在は単純に最初の要素を返す
+                result = elements[0]
+        
+        return result
+    
     async def extract_data(self, page: Page, selectors: Dict[str, Any]) -> Dict[str, Any]:
         """指定されたセレクタを使用してページからデータを抽出する"""
         result = {}
@@ -82,6 +156,34 @@ class PlaywrightScraper:
         
         for key, selector_def in selectors.items():
             try:
+                # 複合セレクタの場合
+                if isinstance(selector_def, dict) and selector_def.get("operator"):
+                    # 複合セレクタの処理
+                    element = await self.process_compound_selector(page, selector_def)
+                    optional = selector_def.get("optional", False)
+                    fallback = selector_def.get("fallback")
+                    transform = selector_def.get("transform", "text")
+                    
+                    if element is None:
+                        if optional or fallback is not None:
+                            result[key] = fallback
+                        else:
+                            result[key] = None
+                        continue
+                    
+                    # 変換処理
+                    if transform == "text":
+                        result[key] = await element.inner_text()
+                    elif transform == "html":
+                        result[key] = await element.inner_html()
+                    elif transform.startswith("attribute:"):
+                        attr_name = transform.split(":", 1)[1]
+                        result[key] = await element.get_attribute(attr_name)
+                    else:
+                        result[key] = await element.inner_text()
+                    
+                    continue
+                
                 # セレクタが文字列の場合は従来の方法で処理
                 if isinstance(selector_def, str):
                     selector = selector_def
@@ -139,8 +241,11 @@ class PlaywrightScraper:
                 
             except Exception as e:
                 logger.error(f"データ抽出エラー {key}: {str(e)}")
-                if isinstance(selector_def, dict) and selector_def.get("optional", False):
-                    result[key] = selector_def.get("fallback")
+                if isinstance(selector_def, dict):
+                    if selector_def.get("operator") and selector_def.get("optional", False):
+                        result[key] = selector_def.get("fallback")
+                    elif selector_def.get("optional", False):
+                        result[key] = selector_def.get("fallback")
                 elif not isinstance(selector_def, str) and getattr(selector_def, "optional", False):
                     result[key] = getattr(selector_def, "fallback", None)
                 else:

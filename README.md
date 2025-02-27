@@ -153,6 +153,36 @@ PlayScraperAPIは、より柔軟で強力なセレクタ定義をサポートし
 - `optional`: `true`の場合、要素が見つからなくてもエラーにならない
 - `fallback`: 要素が見つからない場合のデフォルト値
 
+### 複合セレクタ
+
+複数のセレクタを組み合わせて論理演算を行う複合セレクタもサポートしています。
+
+```json
+{
+  "has_login_form": {                   // 複合セレクタ定義
+    "operator": "or",                   // 論理演算子 (and, or, not, chain)
+    "selectors": [                      // セレクタのリスト
+      "form.login",                     // 単純な文字列セレクタ
+      "input[type='password']",
+      {                                 // 拡張セレクタ定義も使用可能
+        "type": "css",
+        "value": ".login-button"
+      }
+    ],
+    "transform": "text",                // 変換処理
+    "optional": true,                   // 省略可能かどうか
+    "fallback": "false"                 // 見つからない場合のデフォルト値
+  }
+}
+```
+
+#### 複合演算子
+
+- `and`: すべてのセレクタが一致した場合のみ結果を返す
+- `or`: いずれかのセレクタが一致した場合に結果を返す
+- `not`: セレクタが一致しない場合に結果を返す
+- `chain`: セレクタを順番に適用する（最初のセレクタから始めて、その結果に次のセレクタを適用）
+
 ### 使用例
 
 ```python
@@ -173,10 +203,15 @@ selectors = {
         "transform": "attribute:content",
         "optional": true
     },
-    "author": {
-        "type": "xpath",
-        "value": "//div[@class='author-info']/span",
-        "fallback": "不明な著者"
+    "is_article_page": {
+        "operator": "and",
+        "selectors": [
+            "article",
+            ".content",
+            ".published-date"
+        ],
+        "optional": true,
+        "fallback": "false"
     }
 }
 
@@ -186,7 +221,7 @@ data = client.wait_for_completion(task_id)
 print(data["result"]["data"])
 ```
 
-詳細な例は `examples/selectors.json` を参照してください。
+詳細な例は `examples/selectors.json` と `examples/compound_selectors.json` を参照してください。
 
 ## 🎮 サポートされているアクション
 
