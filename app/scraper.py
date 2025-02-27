@@ -102,9 +102,14 @@ class PlaywrightScraper:
         selectors: Optional[Dict[str, str]] = None, 
         actions: Optional[List[Dict[str, Any]]] = None,
         take_screenshot: bool = True,
-        get_html: bool = True
+        get_html: bool = True,
+        save_html_file: bool = False
     ) -> Dict[str, Any]:
         """指定されたURLをスクレイピングし、データを抽出する"""
+        # デバッグログを追加
+        logger.info(f"スクレイピング開始: {url}")
+        logger.info(f"save_html_file: {save_html_file}")
+        
         if not self.browser:
             await self.initialize()
         
@@ -115,7 +120,8 @@ class PlaywrightScraper:
         
         try:
             page = await context.new_page()
-            await page.goto(url, wait_until="networkidle")
+            # タイムアウトを延長し、load イベントを使用する（networkidleの代わりに）
+            await page.goto(url, wait_until="load", timeout=60000)
             logger.info(f"ページにアクセスしました: {url}")
             
             # アクションの実行
@@ -137,7 +143,32 @@ class PlaywrightScraper:
             
             # HTMLの取得
             if get_html:
-                result["html"] = await page.content()
+                html_content = await page.content()
+                result["html"] = html_content
+                
+                # HTMLをファイルに保存
+                if save_html_file:
+                    import os
+                    from urllib.parse import urlparse
+                    
+                    # URLからファイル名を生成
+                    parsed_url = urlparse(url)
+                    domain = parsed_url.netloc.replace(".", "_")
+                    path = parsed_url.path.replace("/", "_")
+                    if path == "":
+                        path = "_index"
+                    filename = f"{domain}{path}.html"
+                    
+                    # outputディレクトリがなければ作成
+                    os.makedirs("output", exist_ok=True)
+                    filepath = os.path.join("output", filename)
+                    
+                    # HTMLをファイルに書き込み
+                    with open(filepath, "w", encoding="utf-8") as f:
+                        f.write(html_content)
+                    
+                    logger.info(f"HTMLをファイルに保存しました: {filepath}")
+                    result["html_file"] = filepath
             
             return result
         

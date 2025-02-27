@@ -56,7 +56,8 @@ class PlayScraperClient:
         url: str,
         selectors: Optional[Dict[str, str]] = None,
         actions: Optional[List[Dict[str, Any]]] = None,
-        options: Optional[Dict[str, Any]] = None
+        options: Optional[Dict[str, Any]] = None,
+        save_html_file: bool = False
     ) -> Dict[str, Any]:
         """
         スクレイピングタスクを開始
@@ -66,6 +67,7 @@ class PlayScraperClient:
             selectors: 抽出するデータのセレクタマップ
             actions: スクレイピング前に実行するアクション
             options: スクレイピングオプション
+            save_html_file: HTMLをファイルとして保存するかどうか
             
         Returns:
             タスクID情報
@@ -74,6 +76,7 @@ class PlayScraperClient:
         
         payload = {
             "url": url,
+            "save_html_file": save_html_file
         }
         
         if selectors:
@@ -87,6 +90,7 @@ class PlayScraperClient:
             payload["options"] = options
         
         logger.info("スクレイピングリクエスト送信中...")
+        logger.debug(f"リクエストペイロード: {payload}")
         response = self.session.post(
             f"{self.base_url}/scrape",
             json=payload
@@ -169,8 +173,9 @@ def main():
     parser.add_argument("--actions", help="アクションのJSONファイルパス")
     parser.add_argument("--timeout", type=float, default=60.0, help="タイムアウト時間（秒）")
     parser.add_argument("--interval", type=float, default=1.0, help="ステータス確認の間隔（秒）")
-    parser.add_argument("--output", help="結果を保存するJSONファイルパス")
+    parser.add_argument("--output", default="output.json", help="結果を保存するJSONファイルパス")
     parser.add_argument("--verbose", "-v", action="store_true", help="詳細なログを表示")
+    parser.add_argument("--save-output", action="store_true", help="HTMLとスクリーンショットをファイルとして保存する")
     
     args = parser.parse_args()
     
@@ -215,7 +220,7 @@ def main():
         
         # スクレイピングタスクの開始
         logger.info(f"スクレイピング開始: {args.url}")
-        task = client.start_scraping(args.url, selectors, actions)
+        task = client.start_scraping(args.url, selectors, actions, save_html_file=args.save_output)
         task_id = task["task_id"]
         
         # タスクの完了を待機
@@ -233,9 +238,38 @@ def main():
             else:
                 logger.warning("抽出データなし（セレクタが指定されていないか、一致するデータがありません）")
             
-            # スクリーンショットとHTMLは表示しない（サイズが大きいため）
-            if "screenshot" in result["result"]:
+            # HTMLファイルが保存された場合
+            if "html_file" in result["result"]:
+                logger.success(f"HTMLファイルを保存しました: {result['result']['html_file']}")
+            
+            # スクリーンショットの保存
+            if "screenshot" in result["result"] and args.save_output:
+                import os
+                import base64
+                from urllib.parse import urlparse
+                
+                # URLからファイル名を生成
+                parsed_url = urlparse(args.url)
+                domain = parsed_url.netloc.replace(".", "_")
+                path = parsed_url.path.replace("/", "_")
+                if path == "":
+                    path = "_index"
+                filename = f"{domain}{path}.png"
+                
+                # outputディレクトリがなければ作成
+                os.makedirs("output", exist_ok=True)
+                filepath = os.path.join("output", filename)
+                
+                # Base64エンコードされたスクリーンショットをデコードしてファイルに保存
+                screenshot_data = base64.b64decode(result["result"]["screenshot"])
+                with open(filepath, "wb") as f:
+                    f.write(screenshot_data)
+                
+                logger.success(f"スクリーンショットを保存しました: {filepath}")
+            elif "screenshot" in result["result"]:
                 logger.info("スクリーンショット: [base64エンコードデータ]")
+            
+            # HTMLコンテンツの情報
             if "html" in result["result"]:
                 logger.info("HTML: [HTMLコンテンツ]")
             
