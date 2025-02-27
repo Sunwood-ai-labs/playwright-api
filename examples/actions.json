@@ -1,0 +1,14 @@
+[
+  {
+    "type": "wait",
+    "value": "2"
+  },
+  {
+    "type": "click",
+    "selector": ".accept-cookies"
+  },
+  {
+    "type": "wait",
+    "value": "1"
+  }
+]
