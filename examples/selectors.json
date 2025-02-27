@@ -1,6 +1,43 @@
 {
-  "title": "h1",
-  "description": "meta[name='description']",
-  "links": "a.nav-link",
-  "main_content": ".main-content p"
+  "title": {
+    "type": "css",
+    "value": "h1",
+    "transform": "text"
+  },
+  "description": {
+    "type": "css",
+    "value": "meta[name='description']",
+    "transform": "attribute:content",
+    "optional": true,
+    "fallback": "説明がありません"
+  },
+  "links": {
+    "type": "css",
+    "value": "a.nav-link",
+    "transform": "text"
+  },
+  "main_content": {
+    "type": "css",
+    "value": ".main-content p",
+    "transform": "text"
+  },
+  "image_url": {
+    "type": "css",
+    "value": ".main-image",
+    "transform": "attribute:src",
+    "optional": true
+  },
+  "author": {
+    "type": "xpath",
+    "value": "//div[@class='author-info']/span",
+    "transform": "text",
+    "optional": true,
+    "fallback": "不明な著者"
+  },
+  "publication_date": {
+    "type": "text",
+    "value": "公開日:",
+    "transform": "text",
+    "optional": true
+  }
 }

@@ -73,33 +73,225 @@ class PlaywrightScraper:
                 logger.error(f"アクション実行エラー {action_type}: {str(e)}")
                 raise
     
-    async def extract_data(self, page: Page, selectors: Dict[str, str]) -> Dict[str, Any]:
+    async def process_compound_selector(self, page: Page, compound_selector):
+        """複合セレクタを処理する"""
+        operator = compound_selector.get("operator") if isinstance(compound_selector, dict) else compound_selector.operator
+        selectors = compound_selector.get("selectors") if isinstance(compound_selector, dict) else compound_selector.selectors
+        transform = compound_selector.get("transform", "text") if isinstance(compound_selector, dict) else compound_selector.transform
+        
+        if not selectors or len(selectors) == 0:
+            return None
+        
+        # 各セレクタを処理
+        elements = []
+        for selector in selectors:
+            # 単純な文字列セレクタの場合
+            if isinstance(selector, str):
+                if selector.startswith("//"):  # XPath
+                    els = await page.xpath(selector)
+                    if els:
+                        elements.append(els[0])
+                else:  # CSS
+                    el = await page.query_selector(selector)
+                    if el:
+                        elements.append(el)
+            
+            # 複合セレクタの場合は再帰的に処理
+            elif isinstance(selector, dict) and selector.get("operator"):
+                el = await self.process_compound_selector(page, selector)
+                if el:
+                    elements.append(el)
+            
+            # 通常のセレクタ定義の場合
+            elif isinstance(selector, dict):
+                selector_type = selector.get("type", "css")
+                selector_value = selector.get("value")
+                
+                if selector_type == "xpath":
+                    els = await page.xpath(selector_value)
+                    if els:
+                        elements.append(els[0])
+                elif selector_type == "text":
+                    el = await page.get_by_text(selector_value).first
+                    if el:
+                        elements.append(el)
+                else:  # css
+                    el = await page.query_selector(selector_value)
+                    if el:
+                        elements.append(el)
+        
+        # 演算子に基づいて結果を処理
+        result = None
+        if operator == "and":
+            # すべてのセレクタが一致した場合のみ最初の要素を返す
+            if len(elements) == len(selectors):
+                result = elements[0]
+        elif operator == "or":
+            # いずれかのセレクタが一致した場合に最初の一致を返す
+            if elements:
+                result = elements[0]
+        elif operator == "not":
+            # セレクタが一致しない場合にダミー要素を返す（テキスト変換用）
+            if not elements:
+                # ダミー要素を作成（テキスト変換用）
+                await page.evaluate("() => { window._dummyEl = document.createElement('div'); window._dummyEl.innerText = 'true'; }")
+                result = await page.evaluate_handle("() => window._dummyEl")
+            else:
+                result = None
+        elif operator == "chain":
+            # セレクタを順番に適用（最初のセレクタから始めて、その結果に次のセレクタを適用）
+            if elements:
+                # TODO: 実際のチェーン処理の実装
+                # 現在は単純に最初の要素を返す
+                result = elements[0]
+        
+        return result
+    
+    async def extract_data(self, page: Page, selectors: Dict[str, Any]) -> Dict[str, Any]:
         """指定されたセレクタを使用してページからデータを抽出する"""
         result = {}
+        errors = {}
         
         if not selectors:
             return result
         
-        for key, selector in selectors.items():
+        for key, selector_def in selectors.items():
             try:
-                if selector.startswith("//"):  # XPathセレクタ
-                    elements = await page.xpath(selector)
-                    if elements:
-                        result[key] = await elements[0].inner_text()
-                else:  # CSSセレクタ
-                    element = await page.query_selector(selector)
-                    if element:
+                # 複合セレクタの場合
+                if isinstance(selector_def, dict) and selector_def.get("operator"):
+                    # 複合セレクタの処理
+                    element = await self.process_compound_selector(page, selector_def)
+                    optional = selector_def.get("optional", False)
+                    fallback = selector_def.get("fallback")
+                    transform = selector_def.get("transform", "text")
+                    
+                    if element is None:
+                        if optional or fallback is not None:
+                            result[key] = fallback
+                            errors[key] = {"type": "warning", "message": "要素が見つかりませんでした", "selector": selector_def}
+                        else:
+                            result[key] = None
+                            errors[key] = {"type": "error", "message": "要素が見つかりませんでした", "selector": selector_def}
+                        continue
+                    
+                    # 変換処理
+                    try:
+                        if transform == "text":
+                            result[key] = await element.inner_text()
+                        elif transform == "html":
+                            result[key] = await element.inner_html()
+                        elif transform.startswith("attribute:"):
+                            attr_name = transform.split(":", 1)[1]
+                            result[key] = await element.get_attribute(attr_name)
+                        else:
+                            result[key] = await element.inner_text()
+                    except Exception as e:
+                        logger.error(f"変換処理エラー {key}: {str(e)}")
+                        if optional or fallback is not None:
+                            result[key] = fallback
+                            errors[key] = {"type": "warning", "message": f"変換処理エラー: {str(e)}", "selector": selector_def}
+                        else:
+                            result[key] = None
+                            errors[key] = {"type": "error", "message": f"変換処理エラー: {str(e)}", "selector": selector_def}
+                    
+                    continue
+                
+                # セレクタが文字列の場合は従来の方法で処理
+                if isinstance(selector_def, str):
+                    selector = selector_def
+                    selector_type = "css"
+                    optional = False
+                    fallback = None
+                    transform = "text"
+                    
+                    # XPathセレクタの自動検出
+                    if selector.startswith("//"):
+                        selector_type = "xpath"
+                # セレクタが辞書またはオブジェクトの場合は拡張セレクタとして処理
+                else:
+                    selector = selector_def.get("value") if isinstance(selector_def, dict) else selector_def.value
+                    selector_type = selector_def.get("type", "css") if isinstance(selector_def, dict) else selector_def.type
+                    optional = selector_def.get("optional", False) if isinstance(selector_def, dict) else selector_def.optional
+                    fallback = selector_def.get("fallback") if isinstance(selector_def, dict) else selector_def.fallback
+                    transform = selector_def.get("transform", "text") if isinstance(selector_def, dict) else selector_def.transform
+                
+                # セレクタタイプに基づいて要素を検索
+                element = None
+                try:
+                    if selector_type == "xpath":
+                        elements = await page.xpath(selector)
+                        element = elements[0] if elements else None
+                    elif selector_type == "text":
+                        element = await page.get_by_text(selector).first
+                    elif selector_type == "css":
+                        element = await page.query_selector(selector)
+                    else:
+                        logger.warning(f"未対応のセレクタタイプ: {selector_type}")
+                        errors[key] = {"type": "error", "message": f"未対応のセレクタタイプ: {selector_type}", "selector": selector_def}
+                        continue
+                except Exception as e:
+                    logger.error(f"セレクタ検索エラー {key}: {str(e)}")
+                    errors[key] = {"type": "error", "message": f"セレクタ検索エラー: {str(e)}", "selector": selector_def}
+                    element = None
+                
+                # 要素が見つからない場合の処理
+                if element is None:
+                    if optional:
+                        result[key] = fallback
+                        errors[key] = {"type": "warning", "message": "要素が見つかりませんでした", "selector": selector_def}
+                        continue
+                    elif fallback is not None:
+                        result[key] = fallback
+                        errors[key] = {"type": "warning", "message": "要素が見つかりませんでした", "selector": selector_def}
+                        continue
+                    else:
+                        result[key] = None
+                        errors[key] = {"type": "error", "message": "要素が見つかりませんでした", "selector": selector_def}
+                        continue
+                
+                # 変換処理
+                try:
+                    if transform == "text":
                         result[key] = await element.inner_text()
+                    elif transform == "html":
+                        result[key] = await element.inner_html()
+                    elif transform.startswith("attribute:"):
+                        attr_name = transform.split(":", 1)[1]
+                        result[key] = await element.get_attribute(attr_name)
+                    else:
+                        result[key] = await element.inner_text()
+                except Exception as e:
+                    logger.error(f"変換処理エラー {key}: {str(e)}")
+                    if optional or fallback is not None:
+                        result[key] = fallback
+                        errors[key] = {"type": "warning", "message": f"変換処理エラー: {str(e)}", "selector": selector_def}
+                    else:
+                        result[key] = None
+                        errors[key] = {"type": "error", "message": f"変換処理エラー: {str(e)}", "selector": selector_def}
+                
             except Exception as e:
                 logger.error(f"データ抽出エラー {key}: {str(e)}")
-                result[key] = None
+                errors[key] = {"type": "error", "message": f"データ抽出エラー: {str(e)}", "selector": selector_def}
+                if isinstance(selector_def, dict):
+                    if selector_def.get("operator") and selector_def.get("optional", False):
+                        result[key] = selector_def.get("fallback")
+                    elif selector_def.get("optional", False):
+                        result[key] = selector_def.get("fallback")
+                elif not isinstance(selector_def, str) and getattr(selector_def, "optional", False):
+                    result[key] = getattr(selector_def, "fallback", None)
+                else:
+                    result[key] = None
+        
+        # エラー情報を結果に追加
+        if errors:
+            result["_errors"] = errors
         
         return result
     
     async def scrape(
         self, 
         url: str, 
-        selectors: Optional[Dict[str, str]] = None, 
+        selectors: Optional[Dict[str, Any]] = None, 
         actions: Optional[List[Dict[str, Any]]] = None,
         take_screenshot: bool = True,
         get_html: bool = True
@@ -125,10 +317,19 @@ class PlaywrightScraper:
             # データの抽出
             data = await self.extract_data(page, selectors or {})
             
+            # エラー情報を分離
+            errors = None
+            if "_errors" in data:
+                errors = data.pop("_errors")
+            
             result = {
                 "url": url,
                 "data": data
             }
+            
+            # エラー情報を追加
+            if errors:
+                result["errors"] = errors
             
             # スクリーンショットの取得
             if take_screenshot:
