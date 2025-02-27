@@ -117,6 +117,77 @@ APIステータスの確認
 }
 ```
 
+## 🔍 拡張セレクタ機能
+
+PlayScraperAPIは、より柔軟で強力なセレクタ定義をサポートしています。従来の単純な文字列セレクタに加えて、詳細なセレクタ定義オブジェクトを使用できます。
+
+### 基本的な使い方
+
+```json
+{
+  "title": "h1",                        // 従来の単純なCSSセレクタ
+  "description": {                      // 拡張セレクタ定義
+    "type": "css",                      // セレクタタイプ (css, xpath, text)
+    "value": "meta[name='description']", // セレクタの値
+    "transform": "attribute:content",   // 変換処理
+    "optional": true,                   // 省略可能かどうか
+    "fallback": "説明がありません"       // 見つからない場合のデフォルト値
+  }
+}
+```
+
+### セレクタタイプ
+
+- `css`: CSSセレクタ (デフォルト)
+- `xpath`: XPathセレクタ
+- `text`: テキスト内容によるセレクタ
+
+### 変換処理
+
+- `text`: テキスト内容を抽出 (デフォルト)
+- `html`: HTML内容を抽出
+- `attribute:name`: 指定した属性の値を抽出 (例: `attribute:href`, `attribute:src`)
+
+### オプション設定
+
+- `optional`: `true`の場合、要素が見つからなくてもエラーにならない
+- `fallback`: 要素が見つからない場合のデフォルト値
+
+### 使用例
+
+```python
+from client import PlayScraperClient
+
+client = PlayScraperClient()
+
+# 拡張セレクタを使用したスクレイピング
+selectors = {
+    "title": {
+        "type": "css",
+        "value": "h1",
+        "transform": "text"
+    },
+    "meta_description": {
+        "type": "css",
+        "value": "meta[name='description']",
+        "transform": "attribute:content",
+        "optional": true
+    },
+    "author": {
+        "type": "xpath",
+        "value": "//div[@class='author-info']/span",
+        "fallback": "不明な著者"
+    }
+}
+
+result = client.start_scraping("https://example.com", selectors=selectors)
+task_id = result["task_id"]
+data = client.wait_for_completion(task_id)
+print(data["result"]["data"])
+```
+
+詳細な例は `examples/selectors.json` を参照してください。
+
 ## 🎮 サポートされているアクション
 
 - `click`: 要素をクリック

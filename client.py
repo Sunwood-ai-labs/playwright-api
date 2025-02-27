@@ -54,7 +54,7 @@ class PlayScraperClient:
     def start_scraping(
         self,
         url: str,
-        selectors: Optional[Dict[str, str]] = None,
+        selectors: Optional[Dict[str, Any]] = None,
         actions: Optional[List[Dict[str, Any]]] = None,
         options: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
@@ -63,7 +63,7 @@ class PlayScraperClient:
         
         Args:
             url: スクレイピング対象のURL
-            selectors: 抽出するデータのセレクタマップ
+            selectors: 抽出するデータのセレクタマップ（文字列または拡張セレクタ定義）
             actions: スクレイピング前に実行するアクション
             options: スクレイピングオプション
             
