@@ -27,6 +27,9 @@ python client.py https://example.com --selectors examples/selectors.json --actio
 # 結果をJSONファイルに保存
 python client.py https://example.com --output result.json
 
+# HTMLとスクリーンショットを自動的に保存
+python client.py https://example.com --save-output
+
 # タイムアウトと確認間隔を指定
 python client.py https://example.com --timeout 120 --interval 2
 ```
@@ -37,6 +40,17 @@ python client.py https://example.com --timeout 120 --interval 2
 # カスタムAPIエンドポイントを指定
 python client.py https://example.com --api-url http://custom-api-server:8000
 ```
+
+## 出力ファイル
+
+`--save-output`オプションを使用すると、以下のファイルが`output`ディレクトリに保存されます：
+
+- `{ドメイン}_{パス}.html` - スクレイピングしたページのHTML
+- `{ドメイン}_{パス}.png` - スクレイピングしたページのスクリーンショット
+
+例えば、`https://example.com/page`をスクレイピングした場合：
+- `output/example_com_page.html`
+- `output/example_com_page.png`
 
 ## セレクタの例
 
