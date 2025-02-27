@@ -28,6 +28,13 @@ class SelectorDefinition(BaseModel):
     transform: Optional[str] = Field(None, description="抽出後の変換処理 (text, html, attribute:name など)")
 
 
+class SelectorError(BaseModel):
+    """セレクタエラー情報"""
+    type: str = Field(..., description="エラータイプ (error, warning)")
+    message: str = Field(..., description="エラーメッセージ")
+    selector: Any = Field(..., description="エラーが発生したセレクタ定義")
+
+
 class ScrapingRequest(BaseModel):
     """スクレイピングリクエスト"""
     url: HttpUrl = Field(..., description="スクレイピング対象のURL")
@@ -44,6 +51,7 @@ class ScrapingResponse(BaseModel):
     screenshot: Optional[str] = Field(None, description="スクリーンショット（Base64エンコード）")
     html: Optional[str] = Field(None, description="取得したHTMLコンテンツ")
     html_file: Optional[str] = Field(None, description="保存されたHTMLファイルのパス")
+    errors: Optional[Dict[str, SelectorError]] = Field(None, description="セレクタごとのエラー情報")
 
 
 class ScraperStatus(BaseModel):

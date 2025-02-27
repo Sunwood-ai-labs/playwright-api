@@ -150,6 +150,7 @@ class PlaywrightScraper:
     async def extract_data(self, page: Page, selectors: Dict[str, Any]) -> Dict[str, Any]:
         """指定されたセレクタを使用してページからデータを抽出する"""
         result = {}
+        errors = {}
         
         if not selectors:
             return result
@@ -167,20 +168,31 @@ class PlaywrightScraper:
                     if element is None:
                         if optional or fallback is not None:
                             result[key] = fallback
+                            errors[key] = {"type": "warning", "message": "要素が見つかりませんでした", "selector": selector_def}
                         else:
                             result[key] = None
+                            errors[key] = {"type": "error", "message": "要素が見つかりませんでした", "selector": selector_def}
                         continue
                     
                     # 変換処理
-                    if transform == "text":
-                        result[key] = await element.inner_text()
-                    elif transform == "html":
-                        result[key] = await element.inner_html()
-                    elif transform.startswith("attribute:"):
-                        attr_name = transform.split(":", 1)[1]
-                        result[key] = await element.get_attribute(attr_name)
-                    else:
-                        result[key] = await element.inner_text()
+                    try:
+                        if transform == "text":
+                            result[key] = await element.inner_text()
+                        elif transform == "html":
+                            result[key] = await element.inner_html()
+                        elif transform.startswith("attribute:"):
+                            attr_name = transform.split(":", 1)[1]
+                            result[key] = await element.get_attribute(attr_name)
+                        else:
+                            result[key] = await element.inner_text()
+                    except Exception as e:
+                        logger.error(f"変換処理エラー {key}: {str(e)}")
+                        if optional or fallback is not None:
+                            result[key] = fallback
+                            errors[key] = {"type": "warning", "message": f"変換処理エラー: {str(e)}", "selector": selector_def}
+                        else:
+                            result[key] = None
+                            errors[key] = {"type": "error", "message": f"変換処理エラー: {str(e)}", "selector": selector_def}
                     
                     continue
                 
@@ -205,42 +217,61 @@ class PlaywrightScraper:
                 
                 # セレクタタイプに基づいて要素を検索
                 element = None
-                if selector_type == "xpath":
-                    elements = await page.xpath(selector)
-                    element = elements[0] if elements else None
-                elif selector_type == "text":
-                    element = await page.get_by_text(selector).first
-                elif selector_type == "css":
-                    element = await page.query_selector(selector)
-                else:
-                    logger.warning(f"未対応のセレクタタイプ: {selector_type}")
-                    continue
+                try:
+                    if selector_type == "xpath":
+                        elements = await page.xpath(selector)
+                        element = elements[0] if elements else None
+                    elif selector_type == "text":
+                        element = await page.get_by_text(selector).first
+                    elif selector_type == "css":
+                        element = await page.query_selector(selector)
+                    else:
+                        logger.warning(f"未対応のセレクタタイプ: {selector_type}")
+                        errors[key] = {"type": "error", "message": f"未対応のセレクタタイプ: {selector_type}", "selector": selector_def}
+                        continue
+                except Exception as e:
+                    logger.error(f"セレクタ検索エラー {key}: {str(e)}")
+                    errors[key] = {"type": "error", "message": f"セレクタ検索エラー: {str(e)}", "selector": selector_def}
+                    element = None
                 
                 # 要素が見つからない場合の処理
                 if element is None:
                     if optional:
                         result[key] = fallback
+                        errors[key] = {"type": "warning", "message": "要素が見つかりませんでした", "selector": selector_def}
                         continue
                     elif fallback is not None:
                         result[key] = fallback
+                        errors[key] = {"type": "warning", "message": "要素が見つかりませんでした", "selector": selector_def}
                         continue
                     else:
                         result[key] = None
+                        errors[key] = {"type": "error", "message": "要素が見つかりませんでした", "selector": selector_def}
                         continue
                 
                 # 変換処理
-                if transform == "text":
-                    result[key] = await element.inner_text()
-                elif transform == "html":
-                    result[key] = await element.inner_html()
-                elif transform.startswith("attribute:"):
-                    attr_name = transform.split(":", 1)[1]
-                    result[key] = await element.get_attribute(attr_name)
-                else:
-                    result[key] = await element.inner_text()
+                try:
+                    if transform == "text":
+                        result[key] = await element.inner_text()
+                    elif transform == "html":
+                        result[key] = await element.inner_html()
+                    elif transform.startswith("attribute:"):
+                        attr_name = transform.split(":", 1)[1]
+                        result[key] = await element.get_attribute(attr_name)
+                    else:
+                        result[key] = await element.inner_text()
+                except Exception as e:
+                    logger.error(f"変換処理エラー {key}: {str(e)}")
+                    if optional or fallback is not None:
+                        result[key] = fallback
+                        errors[key] = {"type": "warning", "message": f"変換処理エラー: {str(e)}", "selector": selector_def}
+                    else:
+                        result[key] = None
+                        errors[key] = {"type": "error", "message": f"変換処理エラー: {str(e)}", "selector": selector_def}
                 
             except Exception as e:
                 logger.error(f"データ抽出エラー {key}: {str(e)}")
+                errors[key] = {"type": "error", "message": f"データ抽出エラー: {str(e)}", "selector": selector_def}
                 if isinstance(selector_def, dict):
                     if selector_def.get("operator") and selector_def.get("optional", False):
                         result[key] = selector_def.get("fallback")
@@ -250,6 +281,10 @@ class PlaywrightScraper:
                     result[key] = getattr(selector_def, "fallback", None)
                 else:
                     result[key] = None
+        
+        # エラー情報を結果に追加
+        if errors:
+            result["_errors"] = errors
         
         return result
     
@@ -282,10 +317,19 @@ class PlaywrightScraper:
             # データの抽出
             data = await self.extract_data(page, selectors or {})
             
+            # エラー情報を分離
+            errors = None
+            if "_errors" in data:
+                errors = data.pop("_errors")
+            
             result = {
                 "url": url,
                 "data": data
             }
+            
+            # エラー情報を追加
+            if errors:
+                result["errors"] = errors
             
             # スクリーンショットの取得
             if take_screenshot:
