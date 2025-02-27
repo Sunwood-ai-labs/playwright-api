@@ -1,0 +1,6 @@
+{
+  "title": "h1",
+  "description": "meta[name='description']",
+  "links": "a.nav-link",
+  "main_content": ".main-content p"
+}
