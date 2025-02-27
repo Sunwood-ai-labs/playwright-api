@@ -171,4 +171,4 @@ cython_debug/
 .pypirc
 .SourceSageAssets/
 output.json
-output/codeium_com_windsurf.png
+output/
