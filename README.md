@@ -1,4 +1,4 @@
-# PlayScraperAPI
+# 🎭 PlayScraperAPI
 
 <p align="center">
   <img src="assets/header.svg" alt="PlayScraperAPI" width="800">
@@ -8,7 +8,7 @@
 
 PlaywrightとPythonを使用したウェブスクレイピングAPIサーバー。Docker Composeで簡単に構築・デプロイが可能です。
 
-## ✨ 機能
+## ✨ 主な機能
 
 - 🔍 Playwrightを使用した高度なブラウザ自動化でのスクレイピング
 - ⚡ 非同期処理によるスケーラブルなAPI設計
@@ -16,6 +16,7 @@ PlaywrightとPythonを使用したウェブスクレイピングAPIサーバー�
 - 📸 スクリーンショット取得機能
 - 📄 HTML全体の取得機能
 - 🔄 バックグラウンドタスク処理と状態管理
+- 🧩 拡張性の高いセレクタシステム
 
 ## 🔧 必要条件
 
@@ -28,13 +29,13 @@ PlaywrightとPythonを使用したウェブスクレイピングAPIサーバー�
 
 - `app/` - APIサーバーとスクレイピングエンジン
 - `client/` - Pythonクライアントライブラリ ([詳細はこちら](client/README.md))
-- `examples/` - 使用例とサンプルデータ
+- `examples/` - 使用例とサンプルコード
 - `assets/` - プロジェクトで使用される静的リソース
 - `tests/` - テストコード
 
 ## 🚀 クイックスタート
 
-### サーバーの起動
+### 🐳 サーバーの起動
 
 ```bash
 # リポジトリのクローン
@@ -48,7 +49,7 @@ docker-compose up -d
 # http://localhost:8001/docs にアクセス
 ```
 
-### クライアントライブラリの使用
+### 🐍 クライアントライブラリの使用
 
 ```bash
 # クライアントライブラリのインストール
@@ -83,7 +84,7 @@ docker-compose logs -f
 
 ## 📡 API エンドポイント
 
-### GET /
+### 🔍 GET /
 
 APIステータスの確認
 
@@ -96,7 +97,7 @@ APIステータスの確認
 }
 ```
 
-### POST /scrape
+### 🔍 POST /scrape
 
 スクレイピングリクエストを送信
 
@@ -139,7 +140,7 @@ APIステータスの確認
 }
 ```
 
-### GET /status/{task_id}
+### 🔍 GET /status/{task_id}
 
 タスクのステータスと結果の確認
 
@@ -162,73 +163,86 @@ APIステータスの確認
 }
 ```
 
-## 🔍 拡張セレクタ機能
+## 🧩 拡張セレクタ機能
 
 PlayScraperAPIは、より柔軟で強力なセレクタ定義をサポートしています。従来の単純な文字列セレクタに加えて、詳細なセレクタ定義オブジェクトを使用できます。
 
-### 基本的な使い方
+### 📝 基本的な使い方
 
 ```json
 {
-  "title": "h1",                        // 従来の単純なCSSセレクタ
-  "description": {                      // 拡張セレクタ定義
-    "type": "css",                      // セレクタタイプ (css, xpath, text)
-    "value": "meta[name='description']", // セレクタの値
-    "transform": "attribute:content",   // 変換処理
-    "optional": true,                   // 省略可能かどうか
-    "fallback": "説明がありません"       // 見つからない場合のデフォルト値
+  "title": {
+    "type": "css",
+    "value": "h1",
+    "transform": "text"
+  },
+  "meta_description": {
+    "type": "css",
+    "value": "meta[name='description']",
+    "transform": "attribute:content",
+    "optional": true
+  },
+  "is_article_page": {
+    "operator": "and",
+    "selectors": [
+      "article",
+      ".content",
+      ".published-date"
+    ],
+    "optional": true,
+    "fallback": "false"
   }
 }
 ```
 
-### セレクタタイプ
+### 🔢 セレクタタイプ
 
 - `css`: CSSセレクタ (デフォルト)
 - `xpath`: XPathセレクタ
 - `text`: テキスト内容によるセレクタ
 
-### 変換処理
+### 🔄 変換処理
 
 - `text`: テキスト内容を抽出 (デフォルト)
 - `html`: HTML内容を抽出
 - `attribute:name`: 指定した属性の値を抽出 (例: `attribute:href`, `attribute:src`)
 
-### オプション設定
+### ⚙️ オプション設定
 
 - `optional`: `true`の場合、要素が見つからなくてもエラーにならない
 - `fallback`: 要素が見つからない場合のデフォルト値
 
-### 複合セレクタ
+### 🔗 複合セレクタ
 
 複数のセレクタを組み合わせて論理演算を行う複合セレクタもサポートしています。
 
 ```json
 {
-  "has_login_form": {                   // 複合セレクタ定義
-    "operator": "or",                   // 論理演算子 (and, or, not, chain)
-    "selectors": [                      // セレクタのリスト
-      "form.login",                     // 単純な文字列セレクタ
+  "has_login_form": {
+    "operator": "or",
+    "selectors": [
+      "form.login",
       "input[type='password']",
-      {                                 // 拡張セレクタ定義も使用可能
+      {
         "type": "css",
         "value": ".login-button"
       }
     ],
-    "transform": "text",                // 変換処理
-    "optional": true,                   // 省略可能かどうか
-    "fallback": "false"                 // 見つからない場合のデフォルト値
+    "transform": "text",
+    "optional": true,
+    "fallback": "false"
   }
 }
 ```
 
-#### 複合演算子
+#### 🔗 複合演算子
 
 - `and`: すべてのセレクタが一致した場合のみ結果を返す
 - `or`: いずれかのセレクタが一致した場合に結果を返す
 - `not`: セレクタが一致しない場合に結果を返す
 - `chain`: セレクタを順番に適用する（最初のセレクタから始めて、その結果に次のセレクタを適用）
 
-### 使用例
+### 📝 使用例
 
 ```python
 from client import PlayScraperClient
@@ -282,7 +296,7 @@ if "html_file" in data["result"]:
 
 PlayScraperAPIは、スクレイピング中に発生したエラーを詳細に記録し、結果に含めることができます。これにより、どのセレクタが問題を引き起こしたのかを特定しやすくなります。
 
-### エラー情報の構造
+### 📝 エラー情報の構造
 
 ```json
 {
@@ -306,19 +320,19 @@ PlayScraperAPIは、スクレイピング中に発生したエラーを詳細に
 }
 ```
 
-### エラータイプ
+### 🔢 エラータイプ
 
 - `error`: 重大なエラーで、要素が見つからないか処理に失敗した場合
 - `warning`: 軽度の警告で、オプショナルな要素が見つからないか、フォールバック値が使用された場合
 
-### エラーメッセージの例
+### 📝 エラーメッセージの例
 
 - `要素が見つかりませんでした`: 指定されたセレクタに一致する要素がページ内に存在しない
 - `変換処理エラー`: 要素は見つかったが、指定された変換処理（text, html, attributeなど）の適用に失敗した
 - `セレクタ検索エラー`: セレクタの構文が無効であるか、検索処理中にエラーが発生した
 - `データ抽出エラー`: その他の一般的なエラー
 
-### エラーハンドリングの例
+### 📝 エラーハンドリングの例
 
 ```python
 from client import PlayScraperClient
@@ -375,7 +389,7 @@ for key, value in data["result"]["data"].items():
 
 MIT
 
-## 🚀 コマンドラインからの使用
+## 💻 コマンドラインからの使用
 
 PlayScraperAPIクライアントはコマンドラインからも使用できます。
 
@@ -393,7 +407,7 @@ python client.py https://example.com --selectors examples/selectors.json --actio
 python client.py https://example.com -v
 ```
 
-### コマンドラインオプション
+### 🛠️ コマンドラインオプション
 
 | オプション | 説明 |
 |------------|------|
@@ -412,11 +426,11 @@ python client.py https://example.com -v
 
 PlayScraperAPIでは、HTMLファイルを保存する方法が2つあります：
 
-1. **サーバー側での保存**：
+1. **🖥️ サーバー側での保存**：
    - APIリクエスト時に `save_html_file: true` を指定すると、サーバー側でHTMLファイルが保存されます。
    - 保存先ディレクトリは `html_output_dir` パラメータで指定できます（デフォルト: "output/html"）。
 
-2. **クライアント側での保存**：
+2. **💻 クライアント側での保存**：
    - クライアントコマンドで `--save-output` オプションを指定すると、クライアント側でHTMLファイルが保存されます。
    - 保存先ディレクトリは `--html-dir` オプションで指定できます（デフォルト: "output/html"）。
    - この方法では、スクリーンショットも同じディレクトリに保存されます。
