@@ -6,6 +6,7 @@
 
 - `selectors.json` - スクレイピングで抽出するデータのセレクタ定義
 - `actions.json` - スクレイピング前に実行するアクションの定義
+- `package_client.py` - インストールしたパッケージを使用した例（同期・非同期）
 
 ## 使用例
 
@@ -13,32 +14,53 @@
 
 ```bash
 # 基本的なスクレイピング（セレクタとアクションなし）
-python client.py https://example.com
+python playscraper_api_cli.py https://example.com
 
 # セレクタを指定してスクレイピング
-python client.py https://example.com --selectors examples/selectors.json
+python playscraper_api_cli.py https://example.com --selectors examples/selectors.json
 
 # アクションを指定してスクレイピング
-python client.py https://example.com --actions examples/actions.json
+python playscraper_api_cli.py https://example.com --actions examples/actions.json
 
 # セレクタとアクションの両方を指定
-python client.py https://example.com --selectors examples/selectors.json --actions examples/actions.json
+python playscraper_api_cli.py https://example.com --selectors examples/selectors.json --actions examples/actions.json
 
 # 結果をJSONファイルに保存
-python client.py https://example.com --output result.json
+python playscraper_api_cli.py https://example.com --output result.json
 
 # HTMLとスクリーンショットを自動的に保存
-python client.py https://example.com --save-output
+python playscraper_api_cli.py https://example.com --save-output
 
 # タイムアウトと確認間隔を指定
-python client.py https://example.com --timeout 120 --interval 2
+python playscraper_api_cli.py https://example.com --timeout 120 --interval 2
 ```
 
 ### カスタムAPIエンドポイントの指定
 
 ```bash
 # カスタムAPIエンドポイントを指定
-python client.py https://example.com --api-url http://custom-api-server:8000
+python playscraper_api_cli.py https://example.com --api-url http://custom-api-server:8000
+```
+
+### パッケージを使用した例
+
+パッケージをインストールした後に使用できる `package_client.py` の例も用意されています：
+
+```bash
+# パッケージを使用した例を実行
+python examples/package_client.py
+```
+
+この例では、同期クライアントと非同期クライアントの両方の使用方法を示しています。
+インストールされた `playscraper-api-client` パッケージを使用して、実際のウェブサイトからデータを抽出し、結果をJSONファイルに保存します。
+
+注意：インストール方法によってインポート文が異なります：
+```python
+# 通常のインストール時（pip install playscraper-api-client）
+from playscraper_api_client import PlayScraperClient
+
+# 開発モードでのインストール時（pip install -e .）- 現在の実装
+from client import PlayScraperClient
 ```
 
 ## 出力ファイル
@@ -80,4 +102,3 @@ python client.py https://example.com --api-url http://custom-api-server:8000
     "value": "1"
   }
 ]
-```

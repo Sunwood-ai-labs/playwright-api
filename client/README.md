@@ -17,7 +17,7 @@ cd playwright-api
 pip install -e .
 
 # または直接インストール (将来的にPyPIに公開される場合)
-pip install playscraperapi-client
+pip install playscraper-api-client
 ```
 
 ## 📋 特徴
@@ -28,12 +28,23 @@ pip install playscraperapi-client
 - 🖼️ スクリーンショットと結果の自動保存
 - 🧩 拡張性の高い設計
 
+## 📋 使用方法
+
+パッケージをインポートする際の注意点：
+```python
+# 通常のインストール時（pip install playscraper-api-client）
+from playscraper_api_client import PlayScraperClient
+
+# 開発モードでのインストール時（pip install -e .）
+from client import PlayScraperClient
+```
+
 ## 💻 使用例
 
 ### 基本的な使い方
 
 ```python
-from client import PlayScraperClient
+from playscraper_api_client import PlayScraperClient
 
 # クライアントの初期化
 client = PlayScraperClient("http://localhost:8001")
@@ -65,7 +76,7 @@ print(f"説明: {result['result']['data']['description']}")
 
 ```python
 import asyncio
-from client import PlayScraperClient
+from playscraper_api_client import PlayScraperClient
 
 async def main():
     # クライアントの初期化
