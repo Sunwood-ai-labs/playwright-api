@@ -1,7 +1,7 @@
 # PlayScraperAPI
 
 <p align="center">
-  <img src="app/assets/header.svg" alt="PlayScraperAPI" width="800">
+  <img src="assets/header.svg" alt="PlayScraperAPI" width="800">
 </p>
 
 ## 🌟 概要
@@ -21,6 +21,49 @@ PlaywrightとPythonを使用したウェブスクレイピングAPIサーバー�
 
 - Docker
 - Docker Compose
+
+## 📦 プロジェクト構成
+
+プロジェクトは以下のコンポーネントで構成されています：
+
+- `app/` - APIサーバーとスクレイピングエンジン
+- `client/` - Pythonクライアントライブラリ ([詳細はこちら](client/README.md))
+- `examples/` - 使用例とサンプルデータ
+- `assets/` - プロジェクトで使用される静的リソース
+- `tests/` - テストコード
+
+## 🚀 クイックスタート
+
+### サーバーの起動
+
+```bash
+# リポジトリのクローン
+git clone https://github.com/Sunwood-ai-labs/playwright-api.git
+cd playwright-api
+
+# Docker Composeでサーバーを起動
+docker-compose up -d
+
+# ブラウザでAPI確認
+# http://localhost:8001/docs にアクセス
+```
+
+### クライアントライブラリの使用
+
+```bash
+# クライアントライブラリのインストール
+pip install -e .
+
+# クライアントのインポート
+from client import PlayScraperClient
+
+# 使用例
+client = PlayScraperClient("http://localhost:8001")
+status = client.check_status()
+print(f"API状態: {status['status']}")
+```
+
+詳細な使用方法は[クライアント README](client/README.md)を参照するか、`examples/`ディレクトリのサンプルコードをご覧ください。
 
 ## 🚀 セットアップと実行
 
