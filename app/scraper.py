@@ -36,10 +36,19 @@ class PlaywrightScraper:
             return
         
         for action in actions:
-            action_type = action.get("type")
-            selector = action.get("selector")
-            value = action.get("value")
-            options = action.get("options", {})
+            # ScrapingActionオブジェクトの場合と辞書の場合の両方に対応
+            if hasattr(action, 'type'):
+                # ScrapingActionオブジェクトの場合
+                action_type = action.type
+                selector = action.selector
+                value = action.value
+                options = action.options or {}
+            else:
+                # 辞書の場合
+                action_type = action.get("type")
+                selector = action.get("selector")
+                value = action.get("value")
+                options = action.get("options", {})
             
             try:
                 if action_type == "click" and selector:
