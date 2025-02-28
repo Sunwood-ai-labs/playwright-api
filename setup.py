@@ -10,7 +10,7 @@ with open("requirements_client.txt", "r", encoding="utf-8") as f:
     requirements = f.read().splitlines()
 
 setup(
-    name="playscraperapi-client",
+    name="playscraper-api-client",
     version="1.0.0",
     author="Maki",
     author_email="sunwood.ai.labs@gmail.com",
@@ -28,7 +28,7 @@ setup(
     install_requires=requirements,
     entry_points={
         "console_scripts": [
-            "playscraperapi=client:main",
+            "playscraper-api=client:main",
         ],
     },
 )
