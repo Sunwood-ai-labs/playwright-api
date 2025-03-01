@@ -169,3 +169,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+.SourceSageAssets/
+output.json
+output/
+simulation_results.json
+package_example_result.json

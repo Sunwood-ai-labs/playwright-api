@@ -1,0 +1,33 @@
+{
+  "url": "https://example.com",
+  "selectors": {
+    "title": "h1",
+    "meta_description": {
+      "type": "css",
+      "value": "meta[name='description']",
+      "transform": "attribute:content",
+      "optional": true
+    },
+    "non_existent_element": {
+      "type": "css",
+      "value": ".this-element-does-not-exist",
+      "fallback": "要素が見つかりませんでした"
+    },
+    "invalid_xpath": {
+      "type": "xpath",
+      "value": "//div[[@class='invalid-syntax']]",
+      "optional": true
+    },
+    "compound_with_error": {
+      "operator": "and",
+      "selectors": [
+        "h1",
+        ".this-element-does-not-exist"
+      ],
+      "fallback": "複合セレクタのエラー"
+    }
+  },
+  "actions": [],
+  "take_screenshot": true,
+  "get_html": true
+}

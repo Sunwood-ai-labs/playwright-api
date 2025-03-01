@@ -1,0 +1,57 @@
+{
+  "title": "h1",
+  "description": {
+    "type": "css",
+    "value": "meta[name='description']",
+    "transform": "attribute:content",
+    "optional": true,
+    "fallback": "説明がありません"
+  },
+  "has_login_form": {
+    "operator": "or",
+    "selectors": [
+      "form.login",
+      "input[type='password']",
+      ".login-button"
+    ],
+    "transform": "text",
+    "optional": true,
+    "fallback": "false"
+  },
+  "is_article_page": {
+    "operator": "and",
+    "selectors": [
+      "article",
+      ".content",
+      {
+        "type": "css",
+        "value": ".published-date"
+      }
+    ],
+    "transform": "text",
+    "optional": true,
+    "fallback": "false"
+  },
+  "no_ads": {
+    "operator": "not",
+    "selectors": [
+      ".advertisement",
+      ".ad-container",
+      "div[id*='ad']"
+    ],
+    "transform": "text",
+    "optional": true,
+    "fallback": "false"
+  },
+  "navigation_links": {
+    "type": "css",
+    "value": "nav a",
+    "transform": "text"
+  },
+  "main_image": {
+    "type": "css",
+    "value": ".main-image",
+    "transform": "attribute:src",
+    "optional": true
+  }
+}
