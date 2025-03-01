@@ -1,7 +1,7 @@
 """
-PlayScraperAPI クライアントパッケージ
+PlaywrightAPI クライアントパッケージ
 
-このパッケージはPlayScraperAPIを簡単に利用するためのクライアントライブラリを提供します。
+このパッケージはPlaywrightAPIを簡単に利用するためのクライアントライブラリを提供します。
 """
 
 from .api import PlayScraperClient

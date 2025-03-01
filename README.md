@@ -2,7 +2,7 @@
   
 ![Image](https://github.com/user-attachments/assets/044e65b8-5d87-4b00-ba53-f59292cfcf8c)
 
-# 🎭 PlayScraperAPI
+# 🎭 PlaywrightAPI
 
 </div>
 

@@ -1,6 +1,6 @@
 # 💻 コマンドラインからの使用
 
-PlayScraperAPIクライアントはコマンドラインからも使用できます。
+PlaywrightAPIクライアントはコマンドラインからも使用できます。
 
 ## 🔍 基本的な使用方法
 
@@ -23,7 +23,7 @@ python client.py https://example.com -v
 | オプション | 説明 |
 |------------|------|
 | `url` | スクレイピング対象のURL（必須） |
-| `--api-url` | PlayScraperAPIのURL（デフォルト: http://localhost:8001） |
+| `--api-url` | PlaywrightAPIのURL（デフォルト: http://localhost:8001） |
 | `--selectors` | セレクタのJSONファイルパス |
 | `--actions` | アクションのJSONファイルパス |
 | `--timeout` | タイムアウト時間（秒）（デフォルト: 60.0） |
@@ -35,7 +35,7 @@ python client.py https://example.com -v
 
 ## 📝 HTMLファイルの保存について
 
-PlayScraperAPIでは、HTMLファイルを保存する方法が2つあります：
+PlaywrightAPIでは、HTMLファイルを保存する方法が2つあります：
 
 1. **🖥️ サーバー側での保存**：
    - APIリクエスト時に `save_html_file: true` を指定すると、サーバー側でHTMLファイルが保存されます。

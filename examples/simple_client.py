@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-PlayScraperAPI 簡易クライアント例
+PlaywrightAPI 簡易クライアント例
 
 新しいクライアントパッケージを使用した簡単な例です。
 """

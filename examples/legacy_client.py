@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-PlayScraperAPI クライアント
+PlaywrightAPI クライアント
 
-PlayScraperAPIを簡単に利用するためのクライアントスクリプト
+PlaywrightAPIを簡単に利用するためのクライアントスクリプト
 """
 
 import argparse
@@ -27,7 +27,7 @@ logger.add(
 
 
 class PlayScraperClient:
-    """PlayScraperAPIクライアントクラス"""
+    """PlaywrightAPIクライアントクラス"""
 
     def __init__(self, base_url: str = "http://localhost:8001"):
         """
@@ -169,9 +169,9 @@ class PlayScraperClient:
 
 def main():
     """メイン関数"""
-    parser = argparse.ArgumentParser(description="PlayScraperAPI クライアント")
+    parser = argparse.ArgumentParser(description="PlaywrightAPI クライアント")
     parser.add_argument("url", help="スクレイピング対象のURL")
-    parser.add_argument("--api-url", default="http://localhost:8001", help="PlayScraperAPI のURL")
+    parser.add_argument("--api-url", default="http://localhost:8001", help="PlaywrightAPI のURL")
     parser.add_argument("--selectors", help="セレクタのJSONファイルパス")
     parser.add_argument("--actions", help="アクションのJSONファイルパス")
     parser.add_argument("--timeout", type=float, default=60.0, help="タイムアウト時間（秒）")

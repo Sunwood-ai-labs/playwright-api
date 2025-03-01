@@ -4,7 +4,7 @@
 """
 複数ユーザーからのアクセスをシミュレーションするスクリプト
 
-PlayScraperAPIに対して複数ユーザーからの同時アクセスをシミュレーションします。
+PlaywrightAPIに対して複数ユーザーからの同時アクセスをシミュレーションします。
 各ユーザーは異なるURLにアクセスするか、同じURLに異なるセレクタでアクセスします。
 """
 
@@ -195,7 +195,7 @@ async def main_async():
     # 引数解析
     parser = argparse.ArgumentParser(description="複数ユーザーからのアクセスをシミュレーション")
     parser.add_argument("--users", type=int, default=10, help="シミュレーションするユーザー数")
-    parser.add_argument("--api-url", default="http://localhost:8001", help="PlayScraperAPIのURL")
+    parser.add_argument("--api-url", default="http://localhost:8001", help="PlaywrightAPIのURL")
     parser.add_argument("--urls", help="カンマ区切りのURLリスト（指定しない場合はデフォルトURLが使用されます）")
     parser.add_argument("--url-file", help="URLリストを含むファイル（1行に1 URL）")
     parser.add_argument("--selectors", help="セレクタのJSONファイルパス")

@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: playscraperapi
+    container_name: PlaywrightAPI
     restart: unless-stopped
     ports:
       - "8001:8000"
