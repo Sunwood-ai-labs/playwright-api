@@ -1,7 +1,7 @@
 """
-PlayScraperAPI クライアント CLI
+PlaywrightAPI クライアント CLI
 
-PlayScraperAPIをコマンドラインから使用するためのインターフェース
+PlaywrightAPIをコマンドラインから使用するためのインターフェース
 """
 
 import argparse
@@ -100,9 +100,9 @@ def main():
     Returns:
         終了コード
     """
-    parser = argparse.ArgumentParser(description="PlayScraperAPI クライアント")
+    parser = argparse.ArgumentParser(description="PlaywrightAPI クライアント")
     parser.add_argument("url", help="スクレイピング対象のURL")
-    parser.add_argument("--api-url", default="http://localhost:8001", help="PlayScraperAPI のURL")
+    parser.add_argument("--api-url", default="http://localhost:8001", help="PlaywrightAPI のURL")
     parser.add_argument("--selectors", help="セレクタのJSONファイルパス")
     parser.add_argument("--actions", help="アクションのJSONファイルパス")
     parser.add_argument("--timeout", type=float, default=60.0, help="タイムアウト時間（秒）")

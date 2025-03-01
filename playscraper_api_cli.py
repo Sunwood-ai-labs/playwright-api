@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-PlayScraperAPI コマンドラインツール
+PlaywrightAPI コマンドラインツール
 
-コマンドラインからPlayScraperAPIクライアントを実行するためのメインスクリプト
+コマンドラインからPlaywrightAPIクライアントを実行するためのメインスクリプト
 ファイル名をより分かりやすく変更し、機能説明を追加しました
 """
 

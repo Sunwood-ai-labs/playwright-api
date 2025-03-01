@@ -8,7 +8,7 @@ from .schemas import ScrapingRequest, ScrapingResponse, ScraperStatus
 from .scraper import PlaywrightScraper
 
 app = FastAPI(
-    title="PlayScraperAPI",
+    title="PlaywrightAPI",
     description="Playwright を使用したウェブスクレイピング API",
     version="1.0.0"
 )
@@ -112,7 +112,7 @@ async def get_status(task_id: str):
 @app.get("/", response_model=Dict[str, str])
 async def root():
     """APIのルートエンドポイント"""
-    return {"status": "online", "message": "PlayScraperAPI が実行中です"}
+    return {"status": "online", "message": "PlaywrightAPI が実行中です"}
 
 
 if __name__ == "__main__":

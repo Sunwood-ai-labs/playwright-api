@@ -4,7 +4,7 @@
 
 # 📡 API エンドポイント
 
-PlayScraperAPIが提供する主要なエンドポイントと使用方法について説明します。
+PlaywrightAPIが提供する主要なエンドポイントと使用方法について説明します。
 
 </div>
 
@@ -17,7 +17,7 @@ APIステータスの確認
 ```json
 {
   "status": "online",
-  "message": "PlayScraperAPI が実行中です"
+  "message": "PlaywrightAPI が実行中です"
 }
 ```
 

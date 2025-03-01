@@ -1,6 +1,6 @@
-# PlayScraperAPI クライアント使用例
+# PlaywrightAPI クライアント使用例
 
-このディレクトリには、PlayScraperAPIクライアントの使用例が含まれています。
+このディレクトリには、PlaywrightAPIクライアントの使用例が含まれています。
 
 ## ファイル構成
 
