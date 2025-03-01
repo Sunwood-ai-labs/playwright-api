@@ -173,3 +173,4 @@ cython_debug/
 output.json
 output/
 simulation_results.json
+package_example_result.json
