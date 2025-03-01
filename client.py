@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-PlayScraperAPI クライアント（レガシー）
+PlaywrightAPI クライアント（レガシー）
 
 このファイルは後方互換性のために維持されています。
 新しい実装では `from client import PlayScraperClient` を使用してください。

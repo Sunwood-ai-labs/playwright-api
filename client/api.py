@@ -1,7 +1,7 @@
 """
-PlayScraperAPI クライアント
+PlaywrightAPI クライアント
 
-PlayScraperAPIを簡単に利用するためのクライアント実装
+PlaywrightAPIを簡単に利用するためのクライアント実装
 """
 
 import json
@@ -16,7 +16,7 @@ from loguru import logger
 
 
 class PlayScraperClient:
-    """PlayScraperAPIクライアントクラス"""
+    """PlaywrightAPIクライアントクラス"""
 
     def __init__(self, base_url: str = "http://localhost:8001"):
         """

@@ -1,7 +1,7 @@
 """
-PlayScraperAPI クライアント ユーティリティ関数
+PlaywrightAPI クライアント ユーティリティ関数
 
-PlayScraperAPIクライアントで使用されるユーティリティ関数を提供します。
+PlaywrightAPIクライアントで使用されるユーティリティ関数を提供します。
 """
 
 import os

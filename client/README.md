@@ -1,12 +1,12 @@
-# 🎭 PlayScraperAPI クライアント
+# 🎭 PlaywrightAPI クライアント
 
 <p align="center">
-  <img src="../assets/header.svg" alt="PlayScraperAPI Client" width="800">
+  <img src="../assets/header.svg" alt="PlaywrightAPI Client" width="800">
 </p>
 
 ## 🌟 概要
 
-PlayScraperAPIを簡単に利用するためのクライアントライブラリです。このパッケージを使用することで、PlaywrightとPythonを使用したウェブスクレイピングAPIサーバーと簡単に連携できます。
+PlaywrightAPIを簡単に利用するためのクライアントライブラリです。このパッケージを使用することで、PlaywrightとPythonを使用したウェブスクレイピングAPIサーバーと簡単に連携できます。
 
 ## 🚀 インストール
 

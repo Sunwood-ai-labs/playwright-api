@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-PlayScraperAPI クライアント互換モジュール
+PlaywrightAPI クライアント互換モジュール
 
 このモジュールは旧client.pyとの互換性を提供します。
 新しい実装ではclient.api.PlayScraperClientの使用を推奨します。

@@ -34,7 +34,7 @@
   
   <!-- メインタイトル -->
   <text x="400" y="85" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle" fill="#ffffff" filter="url(#glow)">
-    PlayScraperAPI
+    PlaywrightAPI
     <animate attributeName="opacity" values="0.9;1;0.9" dur="3s" repeatCount="indefinite" />
   </text>
   

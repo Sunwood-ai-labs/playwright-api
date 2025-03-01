@@ -14,7 +14,7 @@ setup(
     version="1.0.0",
     author="Maki",
     author_email="sunwood.ai.labs@gmail.com",
-    description="PlayScraperAPIのクライアントライブラリ",
+    description="PlaywrightAPIのクライアントライブラリ",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/Sunwood-ai-labs/playwright-api",

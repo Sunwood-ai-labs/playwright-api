@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-PlayScraperAPI 非同期クライアント例
+PlaywrightAPI 非同期クライアント例
 
 非同期APIを使用したクライアント例です。
 """

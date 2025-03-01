@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-PlayScraperAPI パッケージを使用したサンプルスクリプト
+PlaywrightAPI パッケージを使用したサンプルスクリプト
 
 このサンプルは、インストールしたplayscraper-api-clientパッケージを使用して
 スクレイピングを行う方法を示しています。
